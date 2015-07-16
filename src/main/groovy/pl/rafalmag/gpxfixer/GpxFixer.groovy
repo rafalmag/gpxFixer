@@ -38,6 +38,7 @@ public class GpxFixer {
         this.root = root
         this.startTime = startTime
         this.xmlStartTime = DATE_FORMAT.parse(root.trk.time.toString())
+        println("Start time $xmlStartTime")
     }
 
     def fixAndSave(Writer writer) {
@@ -53,14 +54,14 @@ public class GpxFixer {
     private def void fixPointsTimes() {
         long offsetMs = calculateOffsetMs()
         def times = root.trk.trkseg.trkpt.time
-        println(times[0])
-        println(times.size())
+        println("First original time: ${times[0]}")
+        println("Times to convert: ${times.size()}")
         (0..<times.size()).each {
             Date time = DATE_FORMAT.parse(times[it].toString())
             time = new Date(time.getTime() + offsetMs)
             times[it] = DATE_FORMAT.format(time)
         }
-        println(times[0])
+        println("First original time converted: ${times[0]}")
     }
 
     private def long calculateOffsetMs() {
