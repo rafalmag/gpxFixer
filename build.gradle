@@ -6,6 +6,7 @@ version = '1.0'
 
 dependencies {
     compile 'org.codehaus.groovy:groovy-all:2.4+'
+    compile 'com.lexicalscope.jewelcli:jewelcli:0.8.9'
     testCompile 'junit:junit:4.12'
     testCompile 'xmlunit:xmlunit:1.6'
 }
