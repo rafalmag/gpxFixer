@@ -26,6 +26,6 @@ jar {
                 'Implementation-Version': version,
                 'Built-Date': new Date(),
                 'Built-JDK': System.getProperty('java.version'),
-                'Main-Class': 'pl.rafalmag.gpxfixer.GpxFixer'
+                'Main-Class': 'pl.rafalmag.gpxfixer.Main'
     }
 }

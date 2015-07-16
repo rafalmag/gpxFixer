@@ -1,7 +1,5 @@
 package pl.rafalmag.gpxfixer
 
-import com.lexicalscope.jewel.cli.ArgumentValidationException
-import com.lexicalscope.jewel.cli.CliFactory
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.StreamingMarkupBuilder
 import groovy.xml.XmlUtil
@@ -14,41 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class GpxFixer {
     // eg. 1969-12-31T17:00:00Z
-    static def DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-    public static final String progressFormat = "%.2f %% done %n"
-
-    public static void main(String[] args) {
-        GpxFixerArguments result = getArguments(args)
-
-        def is = new FileInputStream(result.inputPath)
-        assert is != null
-        def root = getRootFromStream(is)
-        // "2013-02-16T17:00:00Z"
-        def startTime = DATE_FORMAT.parse(result.startDate)
-        def gpxFixer = new GpxFixer(root, startTime);
-
-
-        def writer = new FileWriter(result.outputPath)
-        gpxFixer.fixAndSave(writer);
-        println("all done")
-    }
-
-    private static GpxFixerArguments getArguments(String[] args) {
-        try {
-            CliFactory.parseArguments(GpxFixerArguments, args);
-        }
-        catch (ArgumentValidationException e) {
-            println 'Usage: java -jar gpxFixer.jar <input> <startDate>'
-            println()
-            println 'Application converts gpx file by fixing points timestamps. '
-            println 'First point timestamp will be set to start date and offset will be calculated. '
-            println 'Other points will be modified accordingly using the same time offset. '
-            println()
-            println(e.getMessage())
-            System.exit(-1);
-            throw new IllegalStateException("after system exit", e)
-        }
-    }
+    static final def DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+    static final String PROGRESS_FORMAT = "%.2f %% done %n"
 
     def static GPathResult getRootFromStream(InputStream is) {
         is.withCloseable { new XmlSlurper().parse(it) }
@@ -57,6 +22,10 @@ class GpxFixer {
     final GPathResult root
     final Date startTime
     final Date xmlStartTime
+
+    GpxFixer(InputStream is, Date startTime) {
+        this(getRootFromStream(is),startTime)
+    }
 
     GpxFixer(GPathResult root, Date startTime) {
         this.root = root
@@ -95,7 +64,7 @@ class GpxFixer {
         } finally {
             executor.shutdown()
         }
-        printf(progressFormat, 1.0)
+        printf(PROGRESS_FORMAT, 1.0)
         println("First original time after convertion: ${times[0]}")
     }
 
@@ -105,7 +74,7 @@ class GpxFixer {
             @Override
             void run() {
                 double progress = index.get() / (double) max * 100;
-                printf(progressFormat, progress)
+                printf(PROGRESS_FORMAT, progress)
             }
         }, 0, 1, TimeUnit.SECONDS);
         executor

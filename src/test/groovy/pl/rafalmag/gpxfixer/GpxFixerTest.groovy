@@ -37,17 +37,16 @@ class GpxFixerTest {
 
     private void shouldFixInputFile(String inputPath, String startDate, String expectedOutputPath) {
         // given
-        def input = this.getClass().getResource(inputPath)
+        def input = getClass().getResource(inputPath)
         def date = GpxFixer.DATE_FORMAT.parse(startDate);
         StringWriter gpxFixedResultWriter = new StringWriter();
 
         //when
-        def root = GpxFixer.getRootFromStream(input.newInputStream())
-        def fixer = new GpxFixer(root, date);
+        def fixer = new GpxFixer(input.newInputStream(), date);
         fixer.fixAndSave(gpxFixedResultWriter)
 
         //then
-        def expectedOutput = this.getClass().getResource(expectedOutputPath).text
+        def expectedOutput = getClass().getResource(expectedOutputPath).text
         Diff diff = new Diff(expectedOutput, gpxFixedResultWriter.toString())
         assertXMLEqual(diff, true);
     }
