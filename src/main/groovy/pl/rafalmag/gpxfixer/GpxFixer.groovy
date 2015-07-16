@@ -11,15 +11,34 @@ class GpxFixer {
     static def DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
     public static void main(String[] args) {
-        def is = new FileInputStream(args[0])
+        CliBuilder cli = getCli()
+        def options = cli.parse(args)
+        if (options == null) {
+            System.exit(-1);
+        }
+
+        def is = new FileInputStream(options.input)
         assert is != null
         def root = getRootFromStream(is)
         // "2013-02-16T17:00:00Z"
-        def startTime = DATE_FORMAT.parse(args[1])
+        def startTime = DATE_FORMAT.parse(options.startDate)
         def gpxFixer = new GpxFixer(root, startTime);
         def writer = new FileWriter("output.gpx")
         gpxFixer.fixAndSave(writer);
         println("done")
+    }
+
+    private static CliBuilder getCli() {
+        def header = 'Application converts gpx file by fixing points timestampts. ' +
+                'First point timestamp will be set to start date and offset will be calculated. ' +
+                'Other points will be modified accordingly using the same time offset. ' +
+                'Output will be written to output.gpx\n\n' +
+                'Options:'
+        def cli = new CliBuilder(usage: 'java -jar gpxFixer.jar <input> <startDate>', header: header, stopAtNonOption: true)
+        cli.i(longOpt: 'input', required: true, args: 1, argName: 'inputFile', "Input gpx file")
+        cli.s(longOpt: 'startDate', required: true, args: 1, argName: 'startDate', "Start date")
+        cli.h(longOpt: 'help', 'print this message')
+        cli
     }
 
     def static GPathResult getRootFromStream(InputStream is) {
@@ -33,8 +52,10 @@ class GpxFixer {
     GpxFixer(GPathResult root, Date startTime) {
         this.root = root
         this.startTime = startTime
-        this.xmlStartTime = DATE_FORMAT.parse(root.trk.time.toString())
-        println("Start time $xmlStartTime")
+        def xmlStartTimeString = root.trk.time.toString();
+        this.xmlStartTime = DATE_FORMAT.parse(xmlStartTimeString)
+        println("Input start time ${DATE_FORMAT.format(startTime)}")
+        println("Xml start time $xmlStartTimeString")
     }
 
     void fixAndSave(Writer writer) {
@@ -57,7 +78,7 @@ class GpxFixer {
             time = new Date(time.getTime() + offsetMs)
             times[it] = DATE_FORMAT.format(time)
         }
-        println("First original time converted: ${times[0]}")
+        println("First original time after convertion: ${times[0]}")
     }
 
     long calculateOffsetMs() {
