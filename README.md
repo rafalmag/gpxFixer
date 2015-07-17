@@ -1,5 +1,9 @@
 # gpxFixer
 
+This project has tests running on Travis CI.
+
+[![Build Status](https://travis-ci.org/rafalmag/gpxFixer.svg?branch=master)](https://travis-ci.org/rafalmag/gpxFixer)
+
 ```
 Usage: java -jar gpxFixer.jar <input> <startDate>
 
